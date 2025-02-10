@@ -1,0 +1,185 @@
+openapi: 3.0.0
+info:
+  title: Flask JWT Authentication API
+  description: API documentation for user and admin authentication with JWT
+  version: 1.0.0
+
+servers:
+  - url: http://127.0.0.1:5000
+    description: Local development server
+
+paths:
+  /login:
+    post:
+      summary: User login
+      description: Authenticate user and return a JWT token.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "admin@example.com"
+                password:
+                  type: string
+                  example: "adminpass"
+      responses:
+        200:
+          description: Successful authentication
+        401:
+          description: Invalid credentials
+
+  /users:
+    post:
+      summary: Create a new user (Admin only)
+      security:
+        - bearerAuth: []
+      description: Admins can create users with an email, phone number, and password.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "user@example.com"
+                phone_number:
+                  type: string
+                  example: "987654321"
+                password:
+                  type: string
+                  example: "userpass"
+      responses:
+        201:
+          description: User created successfully
+        403:
+          description: Admin access required
+
+    get:
+      summary: Get all users (Admin only)
+      security:
+        - bearerAuth: []
+      description: Returns a list of all users (Only admins can access this).
+      responses:
+        200:
+          description: List of users
+        403:
+          description: Admin access required
+
+  /users/{user_id}:
+    put:
+      summary: Update user (Admin only)
+      security:
+        - bearerAuth: []
+      description: Allows an admin to update a user's details.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone_number:
+                  type: string
+                  example: "123123123"
+                password:
+                  type: string
+                  example: "newpassword"
+      responses:
+        200:
+          description: User updated successfully
+        403:
+          description: Admin access required
+
+    delete:
+      summary: Delete a user (Admin only)
+      security:
+        - bearerAuth: []
+      description: Allows an admin to delete a user.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: User deleted successfully
+        403:
+          description: Admin access required
+
+  /profile:
+    put:
+      summary: Update user profile (User only)
+      security:
+        - bearerAuth: []
+      description: Users can update their own profile (except email).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                phone_number:
+                  type: string
+                  example: "555666777"
+                password:
+                  type: string
+                  example: "mypassword"
+                preferences:
+                  type: array
+                  items:
+                    type: string
+                  example: ["sports", "tech"]
+      responses:
+        200:
+          description: Profile updated successfully
+        403:
+          description: User access required
+
+  /admins:
+    post:
+      summary: Create a new admin (Admin only)
+      security:
+        - bearerAuth: []
+      description: Allows an existing admin to create another admin.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: "newadmin@example.com"
+                phone_number:
+                  type: string
+                  example: "555123456"
+                password:
+                  type: string
+                  example: "adminpass"
+      responses:
+        201:
+          description: Admin created successfully
+        403:
+          description: Admin access required
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
