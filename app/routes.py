@@ -1,14 +1,17 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from app import db
-from app.models import User
+from app.models import Admin, User
 
 main = Blueprint('main', __name__)
 
 # Helper function to check if the user is an admin
 def is_admin(user_id):
-    user = User.query.get(user_id)
-    return user.is_admin if user else False
+    user = Admin.query.get(user_id)
+    if user is None:
+        return False
+    return True
+
 
 # User Login (JWT Token Generation)
 @main.route('/login', methods=['POST'])
@@ -17,9 +20,12 @@ def login():
     email = data.get('email')
     password = data.get('password')
 
-    user = User.query.filter_by(email=email).first()
+    user = Admin.query.filter_by(email=email).first()
+    if user is None:
+        user = User.query.filter_by(email=email).first()
+        print("Here")
     if user and user.check_password(password):
-        access_token = create_access_token(identity=user.id)
+        access_token = create_access_token(identity=str(user.id))
         return jsonify(access_token=access_token), 200
 
     return jsonify({"msg": "Invalid credentials"}), 401
