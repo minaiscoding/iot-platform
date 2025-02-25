@@ -1,10 +1,11 @@
-"use client";
 import { Sidebar } from "flowbite-react";
 import { HiArrowSmRight, HiChartPie, HiUserGroup } from "react-icons/hi";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import Cookies from "js-cookie";
 
 export function Menu() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const getItemClass = (path) =>
     `rounded-lg p-2 flex items-center gap-2 transition 
@@ -15,6 +16,14 @@ export function Menu() {
 
   const getIconClass = (path) =>
     location.pathname === path ? "text-white" : "text-gray-900"; 
+
+  // Logout function
+  const handleLogout = () => {
+    Cookies.remove("token");
+    Cookies.remove("refreshToken");
+
+    navigate("/login"); // Redirect to login page
+  };
 
   return (
     <Sidebar aria-label="Default sidebar example" className="h-screen w-64 bg-white shadow-lg">
@@ -49,12 +58,17 @@ export function Menu() {
             </Sidebar.Item>
           </Link>
 
-          <Sidebar.Item 
-            className={getItemClass("/sign-out")} 
-            icon={() => <HiArrowSmRight className={getIconClass("/sign-out")} />} 
+          <button 
+            onClick={handleLogout} 
+            className="w-full text-left"
           >
-            Sign Out
-          </Sidebar.Item>
+            <Sidebar.Item 
+              className={getItemClass("/sign-out")} 
+              icon={() => <HiArrowSmRight className={getIconClass("/sign-out")} />} 
+            >
+              Sign Out
+            </Sidebar.Item>
+          </button>
         </Sidebar.ItemGroup>
       </Sidebar.Items>
     </Sidebar>
