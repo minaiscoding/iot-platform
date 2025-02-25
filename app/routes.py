@@ -1,32 +1,30 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from app import db
-from app.models import Admin, User
+from app.models import User
 
 main = Blueprint('main', __name__)
 
 # Helper function to check if the user is an admin
 def is_admin(user_id):
-    user = Admin.query.get(user_id)
-    if user is None:
-        return False
-    return True
+    user = User.query.get(user_id)
+    return user and user.is_admin
 
-
-# User Login (JWT Token Generation)
 @main.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
     email = data.get('email')
     password = data.get('password')
 
-    user = Admin.query.filter_by(email=email).first()
-    if user is None:
-        user = User.query.filter_by(email=email).first()
-        print("Here")
+    user = User.query.filter_by(email=email).first()
+
     if user and user.check_password(password):
         access_token = create_access_token(identity=str(user.id))
-        return jsonify(access_token=access_token), 200
+        role = "admin" if user.is_admin else "user"
+        return jsonify(
+            access_token=access_token,
+            role=role,
+        ), 200
 
     return jsonify({"msg": "Invalid credentials"}), 401
 
@@ -42,8 +40,9 @@ def create_user():
     email = data.get('email')
     phone_number = data.get('phone_number')
     password = data.get('password')
+    is_admin_flag = data.get('is_admin', False)
 
-    new_user = User(email=email, phone_number=phone_number)
+    new_user = User(email=email, phone_number=phone_number, is_admin=is_admin_flag)
     new_user.set_password(password)
     db.session.add(new_user)
     db.session.commit()
@@ -59,7 +58,7 @@ def get_users():
         return jsonify({"msg": "Admins only"}), 403
 
     users = User.query.all()
-    return jsonify([{"id": u.id, "email": u.email, "phone_number": u.phone_number} for u in users])
+    return jsonify([{ "id": u.id, "email": u.email, "phone_number": u.phone_number, "is_admin": u.is_admin } for u in users])
 
 # CRUD: Update User (Admin only)
 @main.route('/users/<int:user_id>', methods=['PUT'])
@@ -106,7 +105,7 @@ def update_self():
     if 'password' in data:
         user.set_password(data['password'])
     if 'preferences' in data:
-        user.set_preferences(data['preferences'])
+        user.preferences = data['preferences']  # Ensure User model has 'preferences' field
 
     db.session.commit()
     return jsonify({"msg": "Profile updated"})
@@ -130,3 +129,20 @@ def create_admin():
     db.session.commit()
 
     return jsonify({"msg": "Admin created", "admin_id": new_admin.id}), 201
+
+@main.route('/auth/redirect', methods=['GET'])
+@jwt_required()
+def get_user():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+
+    if not user:
+        return jsonify({"msg": "User not found"}), 404
+
+    return jsonify({
+        "user_id": user.id,
+        "email": user.email,
+        "phone_number": user.phone_number,  # Ensure this is included
+        "role": "admin" if user.is_admin else "user"
+    }), 200
+

@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
+import Cookies from "js-cookie";
 
 const ModifyUserPopup = ({ isOpen, onClose, onModify, user }) => {
   const [formData, setFormData] = useState({
     id: "",
-    firstName: "",
-    lastName: "",
     email: "",
     phone: "",
   });
@@ -17,9 +16,38 @@ const ModifyUserPopup = ({ isOpen, onClose, onModify, user }) => {
 
   if (!isOpen || !user) return null;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onModify(formData);
+    const token = Cookies.get("token"); // Now correctly imported
+    console.log("Retrieved Token:", token); // Debugging
+    if (!token) {
+      alert("Unauthorized: No token found");
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://127.0.0.1:5000/users/${formData.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          phone_number: formData.phone,
+        }),
+      });
+
+      const data = await response.json();
+      if (response.ok) {
+        onModify(formData);
+        onClose();
+      } else {
+        alert(data.msg || "Error updating user");
+      }
+    } catch (error) {
+      console.error("Error updating user:", error);
+    }
   };
 
   const handleChange = (e) => {
@@ -54,27 +82,6 @@ const ModifyUserPopup = ({ isOpen, onClose, onModify, user }) => {
         </div>
 
         <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <input
-              type="text"
-              name="firstName"
-              value={formData.firstName}
-              onChange={handleChange}
-              placeholder="First Name"
-              required
-              className="w-full p-3 border-b-2 focus:outline-none focus:border-indigo-900"
-            />
-            <input
-              type="text"
-              name="lastName"
-              value={formData.lastName}
-              onChange={handleChange}
-              placeholder="Last Name"
-              required
-              className="w-full p-3 border-b-2 focus:outline-none focus:border-indigo-900"
-            />
-          </div>
-
           <input
             type="email"
             name="email"
@@ -87,7 +94,7 @@ const ModifyUserPopup = ({ isOpen, onClose, onModify, user }) => {
           <input
             type="tel"
             name="phone"
-            value={formData.phone}
+            value={formData.phone_number}
             onChange={handleChange}
             placeholder="Phone Number"
             required

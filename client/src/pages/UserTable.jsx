@@ -1,19 +1,13 @@
 import { useState } from "react";
-import { Edit } from "lucide-react";
+import { Edit, Trash2 } from "lucide-react";
 import AddUserPopup from "./AddUserPopUp";
 import ModifyUserPopup from "./ModifyUserPopup";
+import axios from "axios";
+import Cookies from "js-cookie";
 
-// Move this to a separate file in a real application
-const initialUsers = Array.from({ length: 50 }, (_, i) => ({
-  id: i + 1,
-  firstName: `User${i + 1}`,
-  lastName: `LastName${i + 1}`,
-  email: `user${i + 1}@algerietelecom.dz`,
-  phone: `+213 ${600000000 + i}`,
-}));
+const API_BASE_URL = "http://localhost:5000";
 
-const UserTable = () => {
-  const [users, setUsers] = useState(initialUsers);
+const UserTable = ({ users, setUsers }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isAddPopupOpen, setIsAddPopupOpen] = useState(false);
   const [isModifyPopupOpen, setIsModifyPopupOpen] = useState(false);
@@ -50,6 +44,56 @@ const UserTable = () => {
     setIsModifyPopupOpen(true);
   };
 
+
+  
+  const handleDeleteUser = async (userId) => {
+
+    if (!userId) {
+      console.error("Error: userId is undefined or null");
+      alert("Invalid user ID.");
+      return;
+    }
+  
+    if (!window.confirm("Are you sure you want to delete this user?")) {
+      return;
+    }
+  
+    try {
+      const token = Cookies.get("token"); // Now correctly imported
+      console.log("Retrieved Token:", token); // Debugging
+      
+      if (!token) {
+                console.error("No token found!");
+                return;
+       }
+  
+      const response = await axios.delete(`${API_BASE_URL}/users/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`, 
+        },
+      });
+  
+      console.log("User deleted successfully:", response.data.msg);
+      alert("User deleted successfully.");
+      
+      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== userId));
+  
+    } catch (error) {
+      console.error("Error deleting user:", error.response?.data || error.message);
+      
+      if (error.response?.status === 403) {
+        alert("Access denied: Only admins can delete users.");
+      } else if (error.response?.status === 401) {
+        alert("Authentication required. Please log in again.");
+      } else if (error.response?.status === 404) {
+        alert("User not found.");
+      } else {
+        alert("Failed to delete user. Please try again.");
+      }
+    }
+  };
+  
+
   return (
     <div className="bg-white p-5 rounded-xl shadow-md relative">
       <div className="flex justify-between items-center mb-3">
@@ -66,26 +110,30 @@ const UserTable = () => {
         <table className="w-full border-collapse min-w-[600px]">
           <thead>
             <tr className="bg-gray-100">
-              <th className="p-3 text-left">First Name</th>
-              <th className="p-3 text-left">Last Name</th>
+              <th className="p-3 text-left">ID</th>
               <th className="p-3 text-left">Email</th>
-              <th className="p-3 text-left">Phone</th>
-              <th className="p-3 text-left">Actions</th>
+              <th className="p-3 text-left">Phone Number</th>
+              <th className="p-3 text-left">Action</th>
             </tr>
           </thead>
           <tbody>
             {paginatedUsers.map((user) => (
               <tr key={user.id} className="border-t hover:bg-gray-50">
-                <td className="p-3">{user.firstName}</td>
-                <td className="p-3">{user.lastName}</td>
+                <td className="p-3">{user.id}</td>
                 <td className="p-3">{user.email}</td>
-                <td className="p-3">{user.phone}</td>
-                <td className="p-3">
+                <td className="p-3">{user.phone_number}</td>
+                <td className="p-3 flex gap-2 justify-start">
                   <button 
-                    className="flex items-center gap-1 text-indigo-900 hover:text-indigo-700"
+                    className="flex items-center border-1 py-1 px-2 rounded gap-1 text-teal-700 hover:text-teal-500"
                     onClick={() => openModifyPopup(user)}
                   >
                     <Edit size={16} /> Modify
+                  </button>
+                  <button 
+                    className="flex items-center border-1 py-1 px-2 rounded gap-1 text-red-700 hover:text-red-500"
+                    onClick={() =>  handleDeleteUser(user.id)}
+                  >
+                    <Trash2 size={16} /> Delete
                   </button>
                 </td>
               </tr>

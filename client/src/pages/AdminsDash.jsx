@@ -4,18 +4,17 @@ import { Menu } from "./Menu";
 import { useEffect } from "react";
 import Cookies from "js-cookie";
 
-const Dashboard = () => {
-  const [activePage, setActivePage] = useState("Users");
+const AdminDashboard = () => {
+  const [activePage, setActivePage] = useState("Admins");
   const [users, setUsers] = useState([]);
   const [usersonly, setUsersOnly] = useState([]);
 
   useEffect(() => {
-    
     fetchUsers();
   }, []);
 
   useEffect(() => {
-    setUsersOnly(users.filter(user => user.is_admin === false));
+    setUsersOnly(users.filter(user => user.is_admin === true));
   }, [users]);
 
 const fetchUsers = async () => {
@@ -60,9 +59,9 @@ const fetchUsers = async () => {
       
       {/* Main Content */}
       <div className="flex-1 p-6 min-h-[80vh] overflow-y-auto">
-        {activePage === "Users" && (
+        {activePage === "Admins" && (
           <div>
-            <h1 className="text-2xl font-bold text-indigo-900 mb-4">List of Users</h1>
+            <h1 className="text-2xl font-bold text-indigo-900 mb-4">List of Admins</h1>
             <UserTable users={usersonly} setUsers={setUsersOnly}/>
           </div>
         )}
@@ -71,4 +70,4 @@ const fetchUsers = async () => {
   );
 };
 
-export default Dashboard;
+export default AdminDashboard;

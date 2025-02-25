@@ -8,6 +8,7 @@ class User(db.Model):
     phone_number = db.Column(db.String(20), unique=True, nullable=False)
     password_hash = db.Column(db.String(128), nullable=False)
     preferences = db.Column(db.Text, nullable=True, default='[]')  # Store as JSON string
+    is_admin = db.Column(db.Boolean, default=False)  # True for Admins, False for regular users
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -21,22 +22,18 @@ class User(db.Model):
     def get_preferences(self):
         return json.loads(self.preferences)
 
-    def __repr__(self):
-        return f"<User {self.email}>"
-
-class Admin(User):
-    is_admin = db.Column(db.Boolean, default=True)  # Always True for Admins
-
-    def create_user(self, email, phone_number, password, preferences=None):
-        new_user = User(email=email, phone_number=phone_number)
-        new_user.set_password(password)
+    @staticmethod
+    def create_user(email, phone_number, password, is_admin=False, preferences=None):
+        user = User(email=email, phone_number=phone_number, is_admin=is_admin)
+        user.set_password(password)
         if preferences:
-            new_user.set_preferences(preferences)
-        db.session.add(new_user)
+            user.set_preferences(preferences)
+        db.session.add(user)
         db.session.commit()
-        return new_user
+        return user
 
-    def update_user(self, user, email=None, phone_number=None, password=None, preferences=None):
+    @staticmethod
+    def update_user(user, email=None, phone_number=None, password=None, preferences=None):
         if email:
             user.email = email
         if phone_number:
@@ -48,16 +45,10 @@ class Admin(User):
         db.session.commit()
         return user
 
-    def delete_user(self, user):
+    @staticmethod
+    def delete_user(user):
         db.session.delete(user)
         db.session.commit()
 
-    def create_admin(self, email, phone_number, password):
-        new_admin = Admin(email=email, phone_number=phone_number)
-        new_admin.set_password(password)
-        db.session.add(new_admin)
-        db.session.commit()
-        return new_admin
-
     def __repr__(self):
-        return f"<Admin {self.email}>"
+        return f"<User {self.email} | Admin: {self.is_admin}>"

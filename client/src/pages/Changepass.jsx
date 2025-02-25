@@ -2,7 +2,10 @@ import React from "react";
 
 const ChangePasswordPopup = ({ onClose }) => {
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+    <div
+    id="modal-overlay"
+    className="fixed inset-0 flex items-center justify-center backdrop-blur-sm bg-black/20 transition-opacity animate-fadeIn"
+  >
       <div className="bg-white p-6 rounded-md shadow-lg w-96">
         <h2 className="text-lg font-semibold">Change Password</h2>
         <input
