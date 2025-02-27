@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
 from app import db
 from app.models import User
+from app.tasks import fetch_and_store_events
 
 main = Blueprint('main', __name__)
 
@@ -105,3 +106,29 @@ def update_self():
 
     db.session.commit()
     return jsonify({"msg": "Profile updated"})
+
+# CRUD: Create Admin (Admin only)
+@main.route('/admins', methods=['POST'])
+@jwt_required()
+def create_admin():
+    admin_id = get_jwt_identity()
+    if not is_admin(admin_id):
+        return jsonify({"msg": "Admins only"}), 403
+
+    data = request.get_json()
+    email = data.get('email')
+    phone_number = data.get('phone_number')
+    password = data.get('password')
+
+    new_admin = User(email=email, phone_number=phone_number, is_admin=True)
+    new_admin.set_password(password)
+    db.session.add(new_admin)
+    db.session.commit()
+
+    return jsonify({"msg": "Admin created", "admin_id": new_admin.id}), 201
+
+
+@main.route("/fetch-events", methods=["GET"])
+def trigger_fetch():
+    fetch_and_store_events()
+    return jsonify({"message": "Events fetched and stored successfully."})
