@@ -4,6 +4,9 @@ from app import db
 from app.models import User
 from werkzeug.security import check_password_hash
 import json
+from app.models import User
+from app.tasks import fetch_and_store_events
+
 main = Blueprint('main', __name__)
 
 # Helper function to check if the user is an admin
@@ -11,6 +14,7 @@ def is_admin(user_id):
     user = User.query.get(user_id)
     return user and user.is_admin
 
+# User Login (JWT Token Generation)
 @main.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
@@ -18,7 +22,6 @@ def login():
     password = data.get('password')
 
     user = User.query.filter_by(email=email).first()
-
     if user and user.check_password(password):
         access_token = create_access_token(identity=str(user.id))
         role = "admin" if user.is_admin else "user"
@@ -150,6 +153,12 @@ def create_admin():
     db.session.commit()
 
     return jsonify({"msg": "Admin created", "admin_id": new_admin.id}), 201
+
+
+@main.route("/fetch-events", methods=["GET"])
+def trigger_fetch():
+    fetch_and_store_events()
+    return jsonify({"message": "Events fetched and stored successfully."})
 
 @main.route('/auth/redirect', methods=['GET'])
 @jwt_required()

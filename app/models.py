@@ -52,3 +52,15 @@ class User(db.Model):
 
     def __repr__(self):
         return f"<User {self.email} | Admin: {self.is_admin}>"
+
+class SMSNotification(db.Model):
+   id= db.Column(db.Integer,primary_key=True)
+   user_id= db.Column(db.Integer,db.ForeignKey('user.id'),nullable=False)
+   phone_number=db.Column(db.String(20),nullable=False)
+   content=db.Column(db.Text,nullable=False)
+   scheduled_date=db.Column(db.DateTime,nullable=False)
+   status=db.Column(db.String(20),default='pending') #pending or sent or failed
+   created_at = db.Column(db.DateTime, default=db.func.now())
+   sent_at = db.Column(db.DateTime, nullable=True)
+   # user = db.relationship("User", backref="notifications")
+
