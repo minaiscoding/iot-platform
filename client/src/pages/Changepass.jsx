@@ -22,7 +22,7 @@ const ChangePasswordPopup = ({ onClose }) => {
       const token = Cookies.get("token"); // Get auth token
 
       const response = await axios.put(
-        "http://127.0.0.1:5000/change-password",
+        "http://100.86.72.40:5000/change-password",
         {
           current_password: currentPassword,
           new_password: newPassword,

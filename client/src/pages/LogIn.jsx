@@ -31,7 +31,7 @@ function LogIn() {
         password: password,
       });
     try {
-      const response = await axios.post("http://127.0.0.1:5000/login", { email, password });
+      const response = await axios.post("http://100.86.72.40:5000/login", { email, password });
   
       console.log("Full Response:", response);
       console.log("Response Data:", response.data);
@@ -50,7 +50,7 @@ function LogIn() {
         setToken(token);
                   // get the user's information
                   const userResponse = await axios.get(
-                    "http://127.0.0.1:5000/auth/redirect",
+                    "http://100.86.72.40:5000/auth/redirect",
                     {
                       headers: {
                         Authorization: `Bearer ${response.data.access_token}`,

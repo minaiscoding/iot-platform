@@ -31,7 +31,7 @@ const UserProfile = () => {
       }
   
       try {
-        const response = await axios.get("http://127.0.0.1:5000/auth/redirect", {
+        const response = await axios.get("http://100.86.72.40:5000/auth/redirect", {
           headers: { Authorization: `Bearer ${token}` },
         });
   
@@ -69,7 +69,7 @@ const UserProfile = () => {
   
     try {
       await axios.put(
-        "http://127.0.0.1:5000/profile",  // Ensure this matches the new backend route
+        "http://100.86.72.40:5000/profile",  // Ensure this matches the new backend route
         { phone_number: phone, preferences: selectedActivities },
         { headers: { Authorization: `Bearer ${token}` } }
       );

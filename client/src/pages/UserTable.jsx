@@ -5,7 +5,7 @@ import ModifyUserPopup from "./ModifyUserPopup";
 import axios from "axios";
 import Cookies from "js-cookie";
 
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = "http://100.86.72.40:5000";
 
 const UserTable = ({ users, setUsers }) => {
   const [currentPage, setCurrentPage] = useState(1);

@@ -26,7 +26,7 @@ const ModifyUserPopup = ({ isOpen, onClose, onModify, user }) => {
     }
 
     try {
-      const response = await fetch(`http://127.0.0.1:5000/users/${formData.id}`, {
+      const response = await fetch(`http://100.86.72.40:5000/users/${formData.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

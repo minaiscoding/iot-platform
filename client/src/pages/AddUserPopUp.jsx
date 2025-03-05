@@ -48,8 +48,8 @@ const AddUserPopup = ({ isOpen, onClose, onAdd }) => {
 
       const endpoint =
         formData.role === "admin"
-          ? "http://127.0.0.1:5000/admins"
-          : "http://127.0.0.1:5000/users";
+          ? "http://100.86.72.40:5000/admins"
+          : "http://100.86.72.40:5000/users";
 
       const response = await axios.post(endpoint, formData, {
         headers: {

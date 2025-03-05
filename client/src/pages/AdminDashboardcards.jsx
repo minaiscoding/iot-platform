@@ -26,7 +26,7 @@ const DashboardCards = () => {
       }
 
       try {
-        const response = await axios.get("http://127.0.0.1:5000/auth/redirect", {
+        const response = await axios.get("http://100.86.72.40:5000/auth/redirect", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -52,7 +52,7 @@ const DashboardCards = () => {
 
     try {
       await axios.put(
-        "http://127.0.0.1:5000/profile",
+        "http://100.86.72.40:5000/profile",
         { phone_number: phone },
         { headers: { Authorization: `Bearer ${token}` } }
       );
