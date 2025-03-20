@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
+import { useEffect } from "react";
 import { Lock, Mail } from 'lucide-react';
 import axios from "axios";
 import { Link } from "react-router-dom";
 import Cookies from "js-cookie";
 import { useJwt } from "react-jwt";
 import { useNavigate } from "react-router-dom";
+// this component is for login and sign up 
 function LogIn() {
 
   const navigate = useNavigate();
@@ -17,7 +19,21 @@ function LogIn() {
   const [token, setToken] = useState("token");
   const { decodedToken, isExpired } = useJwt(token);
   const [errorMsg, setErrorMsg] = useState("");
+  const [showPopup, setShowPopup] = useState(false);
 
+  useEffect(() => {
+    // Check if user returned from external site
+    if (localStorage.getItem("waitingForApproval")) {
+      setShowPopup(true);
+      localStorage.removeItem("waitingForApproval"); // Remove flag after showing popup
+    }
+  }, []);
+
+  const handleSignUp = () => {
+    localStorage.setItem("waitingForApproval", "true"); // Set flag before redirect
+    window.location.href = "https://sciproject.pythonanywhere.com/";
+  };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErrorMsg("");
@@ -157,7 +173,30 @@ const buttonStyles = {
 
 
         </form>
+        <div className='mt-4 flex justify-center items-center gap-2'>
+        <span className="text-gray-600">Don't have an account?</span>
+        <button className="text-[#18B2B2] hover:underline" onClick={handleSignUp}>
+            Sign up
+          </button>
+        </div>
       </div>
+{/* Popup for Admin Approval */}
+{showPopup && (
+  <div className="fixed inset-0 flex items-center justify-center  bg-opacity-50 backdrop-blur-sm bg-black/20 transition-opacity animate-fadeIn">
+    <div className="bg-white p-6 rounded-lg shadow-lg">
+      <p className="text-lg text-gray-700">Wait for Admin's approval</p>
+      <div className="mt-3 flex justify-start"> {/* Align button to the left */}
+        <button
+          className="px-6 py-2 bg-[#18B2B2] text-white rounded hover:bg-[#149999]"
+          onClick={() => setShowPopup(false)}
+        >
+          OK
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
     </div>
   );
 }
